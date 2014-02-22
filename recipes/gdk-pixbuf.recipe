@@ -4,11 +4,13 @@ from cerbero.utils import shell
 
 class Recipe(recipe.Recipe):
     name = 'gdk-pixbuf'
-    version = '2.26.2'
+    version = '2.30.1'
     licenses = [License.LGPLv2Plus]
     configure_options = '--with-included-loaders --enable-static '
     deps = ['jpeg', 'glib', 'libpng', 'tiff', 'zlib' ]
-    autoreconf = True
+
+    stype = SourceType.TARBALL
+    url = 'http://ftp.acc.umu.se/pub/GNOME/sources/gdk-pixbuf/2.30/gdk-pixbuf-2.30.1.tar.xz'
 
     files_libs = ['libgdk_pixbuf-2.0']
     files_bins = ['gdk-pixbuf-query-loaders', 'gdk-pixbuf-csource']
