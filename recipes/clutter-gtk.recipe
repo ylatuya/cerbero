@@ -5,7 +5,7 @@ class Recipe(recipe.Recipe):
     version = '1.4.4'
     # TODO: check license - source files are LGPLv2+ and COPYING is LGPLv2.1
     licenses = [License.LGPLv2_1Plus]
-    deps = ['clutter', 'gtk+']
+    deps = ['clutter', 'gtk+3']
     use_system_libs = True
     autoreconf = True
 
@@ -14,6 +14,6 @@ class Recipe(recipe.Recipe):
 
     files_libs = ['libclutter-gtk-1.0']
     files_devel = ['include/clutter-gtk-1.0', 'lib/pkgconfig/clutter-gtk-1.0.pc']
-    files_gi = ['lib/girepository-1.0/GtkClutter-1.0.typelib', 'share/gir-1.0/GtkClutter-1.0.gir']
+    files_typelibs = ['GtkClutter-1.0']
 
 
