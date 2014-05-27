@@ -47,7 +47,7 @@ class Package(Command):
                 help=_('Creates a tarball instead of a native package')),
             ArgparseArgument('-f', '--force', action='store_true',
                 default=False, help=_('Delete any existing package file')),
-            ArgparseArgument('-d', '--no-devel', action='store_false',
+            ArgparseArgument('-d', '--no-devel', action='store_true',
                 default=True, help=_('Do not create the development version '
                     'of this package')),
             ArgparseArgument('-s', '--skip-deps-build', action='store_true',
@@ -69,7 +69,7 @@ class Package(Command):
                     "--only-build-deps"))
 
         if not args.skip_deps_build:
-            self._build_deps(config, p)
+            self._build_deps(config, p, args.no_devel)
 
         if args.only_build_deps:
             return
@@ -93,9 +93,9 @@ class Package(Command):
         m.action(_("Package successfully created in %s") %
                  ' '.join([os.path.abspath(x) for x in paths]))
 
-    def _build_deps(self, config, package):
+    def _build_deps(self, config, package, no_devel):
         build_command = build.Build()
-        build_command.runargs(config, package.recipes_dependencies(),
+        build_command.runargs(config, package.recipes_dependencies(no_devel),
             cookbook=self.store.cookbook)
 
 
