@@ -1,0 +1,29 @@
+From 3a8f8e304c1fb7cc8759e4a3aaa98a1a98b06bab Mon Sep 17 00:00:00 2001
+From: Andoni Morales Alastruey <ylatuya@gmail.com>
+Date: Fri, 30 May 2014 17:46:00 +0200
+Subject: [PATCH] build: use typelib and gir dirs from gi's pkgconfig
+
+---
+ gdk-pixbuf/Makefile.am | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/gdk-pixbuf/Makefile.am b/gdk-pixbuf/Makefile.am
+index 4ea900a..417b974 100644
+--- a/gdk-pixbuf/Makefile.am
++++ b/gdk-pixbuf/Makefile.am
+@@ -735,10 +735,10 @@ GdkPixbuf_2_0_gir_FILES = \
+     $(libgdk_pixbuf_2_0_la_SOURCES)
+ INTROSPECTION_GIRS += GdkPixbuf-2.0.gir
+ 
+-girdir = $(datadir)/gir-1.0
++girdir = $(datadir)/$(INTROSPECTION_GIRSUFFIX)
+ gir_DATA = $(INTROSPECTION_GIRS)
+ 
+-typelibsdir = $(libdir)/girepository-1.0
++typelibsdir = $(datadir)/$(INTROSPECTION_TYPELIBSUFFIX)
+ typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+ 
+ CLEANFILES += $(gir_DATA) $(typelibs_DATA)
+-- 
+1.8.5.2 (Apple Git-48)
+

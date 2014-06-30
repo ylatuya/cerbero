@@ -70,6 +70,7 @@ class Recipe(recipe.Recipe):
 
     def _set_flags(self, module_path1=None, module_path2=None, theme_path=None):
         self.append_env['CFLAGS'] = self._gtk_flags(module_path1, module_path2, theme_path)
+        self.append_env['CFLAGS'] += ' -Wno-deprecated-declarations '
 
     def _gtk_flags(self, module_path1=None, module_path2=None, theme_path=None):
         flags = ''

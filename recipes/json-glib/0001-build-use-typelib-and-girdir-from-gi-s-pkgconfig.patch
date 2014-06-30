@@ -1,0 +1,29 @@
+From 0d85eb127ab1362a87ee4e93e125bcfd7b56e039 Mon Sep 17 00:00:00 2001
+From: Andoni Morales Alastruey <ylatuya@gmail.com>
+Date: Fri, 30 May 2014 17:26:09 +0200
+Subject: [PATCH] build: use typelib and girdir from gi's pkgconfig
+
+---
+ json-glib/Makefile.am | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/json-glib/Makefile.am b/json-glib/Makefile.am
+index ff9a800..0117025 100644
+--- a/json-glib/Makefile.am
++++ b/json-glib/Makefile.am
+@@ -108,10 +108,10 @@ Json_1_0_gir_CFLAGS = $(INCLUDES) $(AM_CPPFLAGS) $(JSON_CFLAGS) -UJSON_DISABLE_D
+ Json_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
+ Json_1_0_gir_SCANNERFLAGS = --warn-all --pkg-export json-glib-1.0 --c-include "json-glib/json-glib.h"
+ 
+-girdir = $(datadir)/gir-1.0
++girdir = $(datadir)/$(INTROSPECTION_GIRSUFFIX)
+ dist_gir_DATA = Json-1.0.gir
+ 
+-typelibsdir = $(libdir)/girepository-1.0/
++typelibsdir = $(libdir)/$(INTROSPECTION_TYPELIBSUFFIX)
+ typelibs_DATA = Json-1.0.typelib
+ 
+ CLEANFILES += $(dist_gir_DATA) $(typelibs_DATA)
+-- 
+1.8.5.2 (Apple Git-48)
+

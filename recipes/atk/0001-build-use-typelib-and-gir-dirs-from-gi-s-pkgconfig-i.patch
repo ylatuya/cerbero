@@ -1,0 +1,86 @@
+From daab32e2dc40c85224947d2c921514e7c2f028fb Mon Sep 17 00:00:00 2001
+From: Andoni Morales Alastruey <ylatuya@gmail.com>
+Date: Fri, 30 May 2014 17:00:25 +0200
+Subject: [PATCH] build: use typelib and gir dirs from gi's pkgconfig info
+
+---
+ atk/Makefile.am     |  4 ++--
+ atk/Makefile.in     |  4 ++--
+ m4/introspection.m4 | 10 +++++++++-
+ 3 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/atk/Makefile.am b/atk/Makefile.am
+index 4c79fe4..b37095b 100644
+--- a/atk/Makefile.am
++++ b/atk/Makefile.am
+@@ -172,10 +172,10 @@ Atk_1_0_gir_FILES = \
+     $(introspection_generated_sources)
+ INTROSPECTION_GIRS += Atk-1.0.gir
+ 
+-girdir = $(datadir)/gir-1.0
++girdir = $(datadir)/$(INTROSPECTION_GIRSUFFIX)
+ gir_DATA = $(INTROSPECTION_GIRS)
+ 
+-typelibsdir = $(libdir)/girepository-1.0
++typelibsdir = $(libdir)/$(INTROSPECTION_TYPELIBSUFFIX)
+ typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+ 
+ CLEANFILES += $(gir_DATA) $(typelibs_DATA)
+diff --git a/atk/Makefile.in b/atk/Makefile.in
+index b85a8db..97e1ec8 100644
+--- a/atk/Makefile.in
++++ b/atk/Makefile.in
+@@ -429,9 +429,9 @@ BUILT_SOURCES = atkmarshal.h atkmarshal.c atk-enum-types.h atk-enum-types.c
+ @HAVE_INTROSPECTION_TRUE@    $(addprefix $(srcdir)/, $(introspection_sources))	\
+ @HAVE_INTROSPECTION_TRUE@    $(introspection_generated_sources)
+ 
+-@HAVE_INTROSPECTION_TRUE@girdir = $(datadir)/gir-1.0
++@HAVE_INTROSPECTION_TRUE@girdir = $(datadir)/$(INTROSPECTION_GIRSUFFIX)
+ @HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
+-@HAVE_INTROSPECTION_TRUE@typelibsdir = $(libdir)/girepository-1.0
++@HAVE_INTROSPECTION_TRUE@typelibsdir = $(libdir)/$(INTROSPECTION_TYPELIBSUFFIX)
+ @HAVE_INTROSPECTION_TRUE@typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+ @OS_WIN32_TRUE@libatk_1_0_la_DEPENDENCIES = atk-win32-res.o atk.def
+ @MS_LIB_AVAILABLE_TRUE@noinst_DATA = atk-$(ATK_API_VERSION).lib
+diff --git a/m4/introspection.m4 b/m4/introspection.m4
+index 589721c..016efb4 100644
+--- a/m4/introspection.m4
++++ b/m4/introspection.m4
+@@ -41,6 +41,8 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+     ],dnl
+     [auto],[dnl
+         PKG_CHECK_EXISTS([gobject-introspection-1.0 >= $1], found_introspection=yes, found_introspection=no)
++	dnl Canonicalize enable_introspection
++	enable_introspection=$found_introspection
+     ],dnl
+     [dnl	
+         AC_MSG_ERROR([invalid argument passed to --enable-introspection, should be one of @<:@no/auto/yes@:>@])
+@@ -53,11 +55,15 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+     INTROSPECTION_GENERATE=
+     INTROSPECTION_GIRDIR=
+     INTROSPECTION_TYPELIBDIR=
++    INTROSPECTION_GIRSUFFIX=
++    INTROSPECTION_TYPELIBSUFFIX=
+     if test "x$found_introspection" = "xyes"; then
+        INTROSPECTION_SCANNER=`$PKG_CONFIG --variable=g_ir_scanner gobject-introspection-1.0`
+        INTROSPECTION_COMPILER=`$PKG_CONFIG --variable=g_ir_compiler gobject-introspection-1.0`
+        INTROSPECTION_GENERATE=`$PKG_CONFIG --variable=g_ir_generate gobject-introspection-1.0`
+-       INTROSPECTION_GIRDIR=`$PKG_CONFIG --variable=girdir gobject-introspection-1.0`
++       INTROSPECTION_GIRSUFFIX=`$PKG_CONFIG --variable=girsuffix gobject-introspection-1.0`
++       INTROSPECTION_TYPELIBSUFFIX="$($PKG_CONFIG --variable=typelibsuffix gobject-introspection-1.0)"
++       INTROSPECTION_GIRDIR=`$PKG_CONFIG --variable=girsuffix gobject-introspection-1.0`
+        INTROSPECTION_TYPELIBDIR="$($PKG_CONFIG --variable=typelibdir gobject-introspection-1.0)"
+        INTROSPECTION_CFLAGS=`$PKG_CONFIG --cflags gobject-introspection-1.0`
+        INTROSPECTION_LIBS=`$PKG_CONFIG --libs gobject-introspection-1.0`
+@@ -68,6 +74,8 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+     AC_SUBST(INTROSPECTION_GENERATE)
+     AC_SUBST(INTROSPECTION_GIRDIR)
+     AC_SUBST(INTROSPECTION_TYPELIBDIR)
++    AC_SUBST(INTROSPECTION_GIRSUFFIX)
++    AC_SUBST(INTROSPECTION_TYPELIBSUFFIX)
+     AC_SUBST(INTROSPECTION_CFLAGS)
+     AC_SUBST(INTROSPECTION_LIBS)
+     AC_SUBST(INTROSPECTION_MAKEFILE)
+-- 
+1.9.3 (Apple Git-50)
+

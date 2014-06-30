@@ -1,0 +1,69 @@
+From 1d7ea47081a01a7346a8b6c49849f55ee7033d63 Mon Sep 17 00:00:00 2001
+From: Andoni Morales Alastruey <ylatuya@gmail.com>
+Date: Wed, 18 Jun 2014 01:58:55 +0200
+Subject: [PATCH] build: use typelib and gir dirs from gi's pkgconfig info
+
+---
+ libsoup/Makefile.am |  4 ++--
+ m4/introspection.m4 | 10 +++++++++-
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/libsoup/Makefile.am b/libsoup/Makefile.am
+index 24fc9f5..b76de73 100644
+--- a/libsoup/Makefile.am
++++ b/libsoup/Makefile.am
+@@ -278,10 +278,10 @@ INTROSPECTION_GIRS += SoupGNOME-2.4.gir
+ 
+ endif
+ 
+-girdir = $(datadir)/gir-1.0
++girdir = $(datadir)/$(INTROSPECTION_GIRSUFFIX)
+ gir_DATA = $(INTROSPECTION_GIRS)
+ 
+-typelibdir = $(libdir)/girepository-1.0
++typelibdir = $(libdir)/$(INTROSPECTION_TYPELIBSUFFIX)
+ typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+ 
+ CLEANFILES = $(gir_DATA) $(typelib_DATA) $(BUILT_SOURCES)
+diff --git a/m4/introspection.m4 b/m4/introspection.m4
+index 589721c..016efb4 100644
+--- a/m4/introspection.m4
++++ b/m4/introspection.m4
+@@ -41,6 +41,8 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+     ],dnl
+     [auto],[dnl
+         PKG_CHECK_EXISTS([gobject-introspection-1.0 >= $1], found_introspection=yes, found_introspection=no)
++	dnl Canonicalize enable_introspection
++	enable_introspection=$found_introspection
+     ],dnl
+     [dnl	
+         AC_MSG_ERROR([invalid argument passed to --enable-introspection, should be one of @<:@no/auto/yes@:>@])
+@@ -53,11 +55,15 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+     INTROSPECTION_GENERATE=
+     INTROSPECTION_GIRDIR=
+     INTROSPECTION_TYPELIBDIR=
++    INTROSPECTION_GIRSUFFIX=
++    INTROSPECTION_TYPELIBSUFFIX=
+     if test "x$found_introspection" = "xyes"; then
+        INTROSPECTION_SCANNER=`$PKG_CONFIG --variable=g_ir_scanner gobject-introspection-1.0`
+        INTROSPECTION_COMPILER=`$PKG_CONFIG --variable=g_ir_compiler gobject-introspection-1.0`
+        INTROSPECTION_GENERATE=`$PKG_CONFIG --variable=g_ir_generate gobject-introspection-1.0`
+-       INTROSPECTION_GIRDIR=`$PKG_CONFIG --variable=girdir gobject-introspection-1.0`
++       INTROSPECTION_GIRSUFFIX=`$PKG_CONFIG --variable=girsuffix gobject-introspection-1.0`
++       INTROSPECTION_TYPELIBSUFFIX="$($PKG_CONFIG --variable=typelibsuffix gobject-introspection-1.0)"
++       INTROSPECTION_GIRDIR=`$PKG_CONFIG --variable=girsuffix gobject-introspection-1.0`
+        INTROSPECTION_TYPELIBDIR="$($PKG_CONFIG --variable=typelibdir gobject-introspection-1.0)"
+        INTROSPECTION_CFLAGS=`$PKG_CONFIG --cflags gobject-introspection-1.0`
+        INTROSPECTION_LIBS=`$PKG_CONFIG --libs gobject-introspection-1.0`
+@@ -68,6 +74,8 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+     AC_SUBST(INTROSPECTION_GENERATE)
+     AC_SUBST(INTROSPECTION_GIRDIR)
+     AC_SUBST(INTROSPECTION_TYPELIBDIR)
++    AC_SUBST(INTROSPECTION_GIRSUFFIX)
++    AC_SUBST(INTROSPECTION_TYPELIBSUFFIX)
+     AC_SUBST(INTROSPECTION_CFLAGS)
+     AC_SUBST(INTROSPECTION_LIBS)
+     AC_SUBST(INTROSPECTION_MAKEFILE)
+-- 
+1.8.5.2 (Apple Git-48)
+

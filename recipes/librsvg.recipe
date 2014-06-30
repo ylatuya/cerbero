@@ -9,6 +9,8 @@ class Recipe(recipe.Recipe):
 
     stype = SourceType.TARBALL
     url = 'http://ftp.acc.umu.se/pub/GNOME/sources/librsvg/2.40/librsvg-%(version)s.tar.xz'
+    patches = ['librsvg/0001-Add-an-implementation-of-realpath-for-windows-to-mak.patch',
+               'librsvg/0001-build-use-typelib-and-gir-dirs-from-gi-s-pkgconfig-i.patch']
 
     files_libs = ['librsvg-2']
     files_bins = ['rsvg-convert']
@@ -19,7 +21,6 @@ class Recipe(recipe.Recipe):
     files_typelibs = ['Rsvg-2.0']
     configure_options = ' --disable-pixbuf-loader --disable-gtk-theme '
 
-    patches = ['librsvg/0001-Add-an-implementation-of-realpath-for-windows-to-mak.patch']
 
     def prepare(self):
         if self.config.target_platform in [Platform.DARWIN, Platform.IOS]:

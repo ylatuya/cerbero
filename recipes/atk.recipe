@@ -9,6 +9,8 @@ class Recipe(recipe.Recipe):
 
     stype = SourceType.TARBALL
     url = 'http://ftp.acc.umu.se/pub/GNOME/sources/atk/2.10/atk-%(version)s.tar.xz'
+    patches = ['atk/0001-build-use-typelib-and-gir-dirs-from-gi-s-pkgconfig-i.patch']
+    autoreconf = True
 
     files_libs = ['libatk-1.0']
     files_devel = ['lib/pkgconfig/atk.pc', 'include/atk-1.0']

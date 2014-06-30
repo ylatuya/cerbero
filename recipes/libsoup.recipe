@@ -13,7 +13,8 @@ class Recipe(recipe.Recipe):
     deps = ['libxml2', 'glib']
     patches = ['libsoup/0001-Rip-out-sqlite-based-cookie-storage.patch',
                'libsoup/0002-Don-t-build-tests.patch',
-               'libsoup/0003-Pop-the-thread-default-main-context-not-from-the-cal.patch']
+               'libsoup/0003-Pop-the-thread-default-main-context-not-from-the-cal.patch',
+               'libsoup/0004-build-use-typelib-and-gir-dirs-from-gi-s-pkgconfig-i.patch']
 
     files_libs = ['libsoup-2.4']
     files_devel = ['include/libsoup-2.4', 'lib/pkgconfig/libsoup-2.4.pc']

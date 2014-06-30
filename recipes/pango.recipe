@@ -10,6 +10,7 @@ class Recipe(recipe.Recipe):
     autoreconf_sh = 'ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS" autoreconf -ivf '
     licenses = [License.LGPLv2Plus]
     configure_options = '--with-included-modules --enable-static --disable-gtk-doc'
+    patches = ['pango/0001-build-use-typelib-and-gir-dir-from-gi-s-pkgconfig-in.patch']
     deps = ['cairo', 'fontconfig', 'freetype', 'gtk-doc-lite', 'harfbuzz']
 
     files_libs = ['libpangocairo-1.0', 'libpango-1.0', 'libpangoft2-1.0']

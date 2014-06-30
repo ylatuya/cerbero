@@ -1,0 +1,29 @@
+From 8b9c35d29a26dcd6fed314b130a115b297aeeceb Mon Sep 17 00:00:00 2001
+From: Andoni Morales Alastruey <ylatuya@gmail.com>
+Date: Fri, 30 May 2014 17:17:02 +0200
+Subject: [PATCH] build: use typelib and gir dir from gi's pkgconfig info
+
+---
+ pango/Makefile.am | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pango/Makefile.am b/pango/Makefile.am
+index c948ba6..f36b4d4 100644
+--- a/pango/Makefile.am
++++ b/pango/Makefile.am
+@@ -415,10 +415,10 @@ pangowin32-win32-res.o: pangowin32.rc
+ 
+ if HAVE_INTROSPECTION
+ 
+-girdir = $(datadir)/gir-1.0
++girdir = $(datadir)/$(INTROSPECTION_GIRSUFFIX)
+ gir_DATA = $(INTROSPECTION_GIRS)
+ 
+-typelibsdir = $(libdir)/girepository-1.0
++typelibsdir = $(libdir)/$(INTROSPECTION_TYPELIBSUFFIX)
+ typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+ 
+ endif # HAVE_INTROSPECTION
+-- 
+1.8.5.2 (Apple Git-48)
+

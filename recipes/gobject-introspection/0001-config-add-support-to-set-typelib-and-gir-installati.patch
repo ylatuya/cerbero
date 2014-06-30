@@ -1,41 +1,216 @@
-From 5eb2bc5ab78cac11abd98597e9f35a69598288a5 Mon Sep 17 00:00:00 2001
+From 4f186c22fc14d433756bcce778f11260458ee331 Mon Sep 17 00:00:00 2001
 From: Andoni Morales Alastruey <ylatuya@gmail.com>
 Date: Wed, 9 Apr 2014 13:17:19 +0200
 Subject: [PATCH] config: add support to set typelib and gir installations dirs
 
 https://bugzilla.gnome.org/show_bug.cgi?id=723862
 ---
- configure.ac | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ Makefile-gir.am                           |  2 +-
+ Makefile-tools.am                         |  3 ++-
+ Makefile.in                               |  2 +-
+ Makefile.introspection                    |  2 +-
+ configure.ac                              | 12 +++++++++++-
+ girepository/girepository.c               |  2 +-
+ giscanner/transformer.py                  |  3 +--
+ gobject-introspection-1.0.pc.in           |  6 ++++--
+ gobject-introspection-no-export-1.0.pc.in |  6 ++++--
+ m4/introspection.m4                       | 10 +++++++++-
+ tools/g-ir-annotation-tool.in             |  1 +
+ tools/g-ir-scanner.in                     |  1 +
+ 12 files changed, 37 insertions(+), 13 deletions(-)
 
+diff --git a/Makefile-gir.am b/Makefile-gir.am
+index 52f7ee3..fcc3ddf 100644
+--- a/Makefile-gir.am
++++ b/Makefile-gir.am
+@@ -219,7 +219,7 @@ INTROSPECTION_GIRS += $(BUILT_GIRSOURCES)
+ girdir = $(GIR_DIR)
+ gir_DATA = $(STATIC_GIRSOURCES) $(SUBSTITUTED_GIRSOURCES) $(BUILT_GIRSOURCES)
+ 
+-typelibsdir = $(libdir)/girepository-1.0
++typelibsdir = $(libdir)/@TYPELIB_SUFFIX@
+ typelibs_DATA = $(gir_DATA:.gir=.typelib)
+ 
+ CLEANFILES += $(typelibs_DATA)
+diff --git a/Makefile-tools.am b/Makefile-tools.am
+index 34d2a25..0d87b3c 100644
+--- a/Makefile-tools.am
++++ b/Makefile-tools.am
+@@ -10,7 +10,8 @@ EXTRA_DIST += 				\
+ 	tools/g-ir-annotation-tool.in	\
+ 	tools/g-ir-doc-tool.in
+ 
+-TOOL_SUBSTITUTIONS = sed -e s,@libdir\@,$(libdir), -e s,@datarootdir\@,$(datarootdir), -e s,@PYTHON\@,$(PYTHON),
++TOOL_SUBSTITUTIONS = sed -e s,@libdir\@,$(libdir), -e s,@GIR_DIR\@,$(GIR_DIR), -e s,@PYTHON\@,$(PYTHON),
++TOOL_SUBSTITUTIONS = sed -e s,@libdir\@,$(libdir), -e s,@datarootdir\@,$(datarootdir), -e s,@PYTHON\@,$(PYTHON), -e s,@GIR_SUFFIX\@,$(GIR_SUFFIX),
+ 
+ g-ir-scanner: tools/g-ir-scanner.in _giscanner.la Makefile
+ 	$(AM_V_GEN) $(TOOL_SUBSTITUTIONS) $< > $@.tmp && mv $@.tmp $@
+diff --git a/Makefile.in b/Makefile.in
+index b56ebfa..e8ee4f0 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -57,7 +57,7 @@
+ #   YourLib_1_0_gir_FILES = $(libyourlib_1_0_SOURCES)
+ #   girdir = $(datadir)/gir-1.0
+ #   dist_gir_DATA = YourLib-1.0.gir
+-#   typelibdir = $(libdir)/girepository-1.0
++#   typelibdir = $(libdir)/@TYPELIB_SUFIX@
+ #   typelib_DATA = YourLib-1.0.typelib
+ #   CLEANFILES = $(dist_gir_DATA) $(typelib_DATA)
+ #
+diff --git a/Makefile.introspection b/Makefile.introspection
+index bcfecba..4240317 100644
+--- a/Makefile.introspection
++++ b/Makefile.introspection
+@@ -33,7 +33,7 @@
+ #   YourLib_1_0_gir_FILES = $(libyourlib_1_0_SOURCES)
+ #   girdir = $(datadir)/gir-1.0
+ #   dist_gir_DATA = YourLib-1.0.gir
+-#   typelibdir = $(libdir)/girepository-1.0
++#   typelibdir = $(libdir)/@TYPELIB_SUFIX@
+ #   typelib_DATA = YourLib-1.0.typelib
+ #   CLEANFILES = $(dist_gir_DATA) $(typelib_DATA)
+ #
 diff --git a/configure.ac b/configure.ac
-index 96da585..1dba753 100644
+index 96da585..09b9a38 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -115,7 +115,10 @@ AS_AC_EXPAND(EXPANDED_LIBEXECDIR, "$libexecdir")
- AS_AC_EXPAND(EXPANDED_DATADIR, "$datadir")
- 
- #### Directory to install the libexec binaries
--GOBJECT_INTROSPECTION_LIBDIR="$EXPANDED_LIBDIR"
-+AC_ARG_WITH(typelib-dir,
-+	    AS_HELP_STRING([--with-typelib-lib], [Directory prefix for typelib installation]),
-+	    [with_typelibdir=$withval], [with_typelibdir="$EXPANDED_LIBDIR"])
-+GOBJECT_INTROSPECTION_LIBDIR="$with_typelibdir"
+@@ -119,8 +119,18 @@ GOBJECT_INTROSPECTION_LIBDIR="$EXPANDED_LIBDIR"
  AC_SUBST(GOBJECT_INTROSPECTION_LIBDIR)
  AC_DEFINE_UNQUOTED(GOBJECT_INTROSPECTION_LIBDIR,"$GOBJECT_INTROSPECTION_LIBDIR", [Directory prefix for typelib installation])
  
-@@ -124,7 +127,10 @@ GIR_SUFFIX="gir-1.0"
++AC_ARG_WITH(typelib-suffix,
++	    AS_HELP_STRING([--with-typelib-siffux], [Directory suffix for typelib installation]),
++	    [with_typelibsuffix=$withval], [with_typelibsuffix="girepository-1.0"])
++TYPELIB_SUFFIX="$with_typelibsuffix"
++AC_SUBST(TYPELIB_SUFFIX)
++AC_DEFINE_UNQUOTED(TYPELIB_SUFFIX,"$GOBJECT_INTROSPECTION_LIBDIR", [Directory suffix for typelib installation])
++
+ #### Directory to install the gir files
+-GIR_SUFFIX="gir-1.0"
++AC_ARG_WITH(gir-suffix,
++	    AS_HELP_STRING([--with-gir-suffix], [Directory suffix for typelib installation]),
++	    [with_girsuffix=$withval], [with_girsuffix="gir-1.0"])
++GIR_SUFFIX="$with_girsuffix"
  AC_SUBST(GIR_SUFFIX)
  AC_DEFINE_UNQUOTED(GIR_SUFFIX, "$GIR_SUFFIX", [Name of the gir directory])
  
--GIR_DIR="$EXPANDED_DATADIR/$GIR_SUFFIX"
-+AC_ARG_WITH(gir-dir,
-+	    AS_HELP_STRING([--with-gir-dir], [Directory prefix for typelib installation]),
-+	    [with_girdir=$withval], [with_girdir="$EXPANDED_DATADIR/$GIR_SUFFIX"])
-+GIR_DIR="$with_girdir"
- AC_SUBST(GIR_DIR)
- AC_DEFINE_UNQUOTED(GIR_DIR, "$GIR_DIR", [Director prefix for gir installation])
+diff --git a/girepository/girepository.c b/girepository/girepository.c
+index 6fc7c77..cec2d2f 100644
+--- a/girepository/girepository.c
++++ b/girepository/girepository.c
+@@ -188,7 +188,7 @@ init_globals (void)
  
+       libdir = GOBJECT_INTROSPECTION_LIBDIR;
+ 
+-      typelib_dir = g_build_filename (libdir, "girepository-1.0", NULL);
++      typelib_dir = g_build_filename (libdir, TYPELIB_SUFFIX, NULL);
+ 
+       search_path = g_slist_prepend (search_path, typelib_dir);
+ 
+diff --git a/giscanner/transformer.py b/giscanner/transformer.py
+index 80265dd..a45b790 100644
+--- a/giscanner/transformer.py
++++ b/giscanner/transformer.py
+@@ -181,8 +181,7 @@ None."""
+     def _find_include(self, include):
+         searchdirs = self._includepaths[:]
+         for path in _xdg_data_dirs:
+-            searchdirs.append(os.path.join(path, 'gir-1.0'))
+-        searchdirs.append(os.path.join(DATADIR, 'gir-1.0'))
++            searchdirs.append(os.path.join(path, GIRSUFFIX))
+ 
+         girname = '%s-%s.gir' % (include.name, include.version)
+         for d in searchdirs:
+diff --git a/gobject-introspection-1.0.pc.in b/gobject-introspection-1.0.pc.in
+index a08b5d2..f95f56e 100644
+--- a/gobject-introspection-1.0.pc.in
++++ b/gobject-introspection-1.0.pc.in
+@@ -10,8 +10,10 @@ g_ir_scanner=${bindir}/g-ir-scanner
+ g_ir_compiler=${bindir}/g-ir-compiler@EXEEXT@
+ g_ir_generate=${bindir}/g-ir-generate@EXEEXT@
+ gidatadir=${datadir}/gobject-introspection-1.0
+-girdir=${datadir}/gir-1.0
+-typelibdir=${libdir}/girepository-1.0
++girsuffix=@GIR_SUFFIX@
++typelibsuffix=@TYPELIB_SUFFIX@
++girdir=${datadir}/${girsuffix}
++typelibdir=${libdir}/${typelibsuffix}
+ 
+ Cflags: -I${includedir}/gobject-introspection-1.0 @FFI_PC_CFLAGS@
+ Requires: glib-2.0 gobject-2.0
+diff --git a/gobject-introspection-no-export-1.0.pc.in b/gobject-introspection-no-export-1.0.pc.in
+index d214d22..5be9bbc 100644
+--- a/gobject-introspection-no-export-1.0.pc.in
++++ b/gobject-introspection-no-export-1.0.pc.in
+@@ -9,8 +9,10 @@ includedir=@includedir@
+ g_ir_scanner=${bindir}/g-ir-scanner
+ g_ir_compiler=${bindir}/g-ir-compiler@EXEEXT@
+ g_ir_generate=${bindir}/g-ir-generate@EXEEXT@
+-girdir=${datadir}/gir-1.0
+-typelibdir=${libdir}/girepository-1.0
++girsuffix=@GIR_SUFFIX@
++typelibsuffix=@TYPELIB_SUFFIX@
++girdir=${datadir}/${girsuffix}
++typelibdir=${libdir}/${typelibsuffix}
+ 
+ Cflags: -I${includedir}/gobject-introspection-1.0 @FFI_PC_CFLAGS@
+ Requires: glib-2.0 gobject-2.0
+diff --git a/m4/introspection.m4 b/m4/introspection.m4
+index d89c3d9..166ebe3 100644
+--- a/m4/introspection.m4
++++ b/m4/introspection.m4
+@@ -55,11 +55,15 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+     INTROSPECTION_GENERATE=
+     INTROSPECTION_GIRDIR=
+     INTROSPECTION_TYPELIBDIR=
++    INTROSPECTION_GIRSUFFIX=
++    INTROSPECTION_TYPELIBSUFFIX=
+     if test "x$found_introspection" = "xyes"; then
+        INTROSPECTION_SCANNER=`$PKG_CONFIG --variable=g_ir_scanner gobject-introspection-1.0`
+        INTROSPECTION_COMPILER=`$PKG_CONFIG --variable=g_ir_compiler gobject-introspection-1.0`
+        INTROSPECTION_GENERATE=`$PKG_CONFIG --variable=g_ir_generate gobject-introspection-1.0`
+-       INTROSPECTION_GIRDIR=`$PKG_CONFIG --variable=girdir gobject-introspection-1.0`
++       INTROSPECTION_GIRSUFFIX=`$PKG_CONFIG --variable=girsuffix gobject-introspection-1.0`
++       INTROSPECTION_TYPELIBSUFFIX="$($PKG_CONFIG --variable=typelibsuffix gobject-introspection-1.0)"
++       INTROSPECTION_GIRDIR=`$PKG_CONFIG --variable=girsuffix gobject-introspection-1.0`
+        INTROSPECTION_TYPELIBDIR="$($PKG_CONFIG --variable=typelibdir gobject-introspection-1.0)"
+        INTROSPECTION_CFLAGS=`$PKG_CONFIG --cflags gobject-introspection-1.0`
+        INTROSPECTION_LIBS=`$PKG_CONFIG --libs gobject-introspection-1.0`
+@@ -70,6 +76,8 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
+     AC_SUBST(INTROSPECTION_GENERATE)
+     AC_SUBST(INTROSPECTION_GIRDIR)
+     AC_SUBST(INTROSPECTION_TYPELIBDIR)
++    AC_SUBST(INTROSPECTION_GIRSUFFIX)
++    AC_SUBST(INTROSPECTION_TYPELIBSUFFIX)
+     AC_SUBST(INTROSPECTION_CFLAGS)
+     AC_SUBST(INTROSPECTION_LIBS)
+     AC_SUBST(INTROSPECTION_MAKEFILE)
+diff --git a/tools/g-ir-annotation-tool.in b/tools/g-ir-annotation-tool.in
+index 5668cbe..6dd8b78 100755
+--- a/tools/g-ir-annotation-tool.in
++++ b/tools/g-ir-annotation-tool.in
+@@ -24,6 +24,7 @@ import sys
+ import __builtin__
+ 
+ __builtin__.__dict__['DATADIR'] = "@datarootdir@"
++__builtin__.__dict__['GIRSUFFIX'] = "@GIR_SUFFIX@"
+ 
+ if 'GI_SCANNER_DEBUG' in os.environ:
+     def on_exception(exctype, value, tb):
+diff --git a/tools/g-ir-scanner.in b/tools/g-ir-scanner.in
+index f709683..4b07c77 100755
+--- a/tools/g-ir-scanner.in
++++ b/tools/g-ir-scanner.in
+@@ -24,6 +24,7 @@ import sys
+ import __builtin__
+ 
+ __builtin__.__dict__['DATADIR'] = "@datarootdir@"
++__builtin__.__dict__['GIRSUFFIX'] = "@GIR_SUFFIX@"
+ 
+ if 'GI_SCANNER_DEBUG' in os.environ:
+     def on_exception(exctype, value, tb):
 -- 
-1.8.3.2
+1.8.5.2 (Apple Git-48)
 
